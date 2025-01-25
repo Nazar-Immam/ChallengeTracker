@@ -1,71 +1,210 @@
-
-document.addEventListener("DOMContentLoaded", () => {
-    const setupContainer = document.getElementById("setupContainer");
-    const form = document.getElementById("daysForm");
-    const daysInput = document.getElementById("daysInput");
-    const grid = document.getElementById("challengeGrid");
-    const resetButton = document.getElementById("resetButton");
-
-    function generateGrid(days) {
-        grid.innerHTML = "";
-        for (let i = 1; i <= days; i++) {
-            const button = document.createElement("button");
-            button.textContent = i;
-            button.disabled = i !== 1 && !localStorage.getItem(`day-${i - 1}`);
-
-            if (localStorage.getItem(`day-${i}`)) {
-                button.classList.add("completed");
-            }
-
-            button.addEventListener("click", () => {
-                button.classList.toggle("completed");
-                if (button.classList.contains("completed")) {
-                    localStorage.setItem(`day-${i}`, "completed");
-                    const nextButton = grid.querySelector(`button:nth-child(${i + 1})`);
-                    if (nextButton) nextButton.disabled = false;
-                } else {
-                    for (let j = i + 1; j <= days; j++) {
-                        const nextButton = grid.querySelector(`button:nth-child(${j})`);
-                        if (nextButton) {
-                            nextButton.disabled = true;
-                            nextButton.classList.remove("completed");
-                            localStorage.removeItem(`day-${j}`);
-                        }
-                    }
-                }
-            });
-
-            grid.appendChild(button);
-        }
-    }
-
-    const savedDays = localStorage.getItem("challengeDays");
-    if (savedDays) {
-        generateGrid(parseInt(savedDays));
-        setupContainer.style.display = "none"; // Hide the heading and form
-        resetButton.style.display = "block";
-    }
-
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const days = parseInt(daysInput.value);
-        if (isNaN(days) || days <= 0) {
-            alert("Please enter a valid number of days!");
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Challenge Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <script src="script.js" defer></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        localStorage.setItem("challengeDays", days);
-        generateGrid(days);
+        nav {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            
+        }
 
-        setupContainer.style.display = "none"; // Hide the heading and form
-        resetButton.style.display = "block";
-    });
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+        }
 
-    resetButton.addEventListener("click", () => {
-        localStorage.clear();
-        grid.innerHTML = "";
-        setupContainer.style.display = "block"; // Show the heading and form again
-        resetButton.style.display = "none";
-        daysInput.value = "";
-    });
-});
+        .challenge-grid button {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .challenge-grid button.completed {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .challenge-grid button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+        }
+
+        footer a {
+            color: #a0d9f6;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        h1, h2 {
+            margin-top: 20px;
+        }
+        .container h1,h2 {
+            color: rgb(219, 224, 229);
+        }
+        form {
+           margin: 20px 0;
+        }
+
+        form input, form button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+        }           
+        form {
+             margin: 20px 0;
+              display: flex;
+          justify-content: center;
+         align-items: center;
+         gap: 10px;
+        }
+
+        form input {
+            width: 100px; /* Set a fixed, smaller width */
+            padding: 10px; /* Reduce padding */
+            font-size: 0.9rem; /* Adjust font size */
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.5); /* Subtle border for visibility */
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        form input:focus {
+            outline: none;
+            border-color: #a0d9f6; /* Highlight border on focus */
+        }
+
+        form button {
+            padding: 10px,5px; /* Reduce padding */
+            font-size: 1rem; /* Adjust font size */
+            border-radius: 5px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #45a049; /* Slightly darker shade on hover */
+        }
+
+        form button:active {
+            transform: scale(0.95); /* Slight "press" effect */
+        }
+
+        #task{
+            color: #ffffff;
+        }
+
+        #abab{
+            color: #a0d4ed;
+        }
+        #resetButton {
+            margin: 20px 0;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            background-color: #f44336;
+            color: white;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+        } 
+        p {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            color: rgb(107, 194, 228);
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+
+
+        #resetButton:hover {
+             background-color: #e53935;
+        }
+
+
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>Challenge Tracker</strong></li>
+        </ul>
+    </nav>
+    
+    
+    <main class="container">
+        <h1>Welcome to Your Challenge Tracker</h1>
+        <h2>Stay motivated and complete your journey!</h2>
+        <div class="container">
+            <div id="setupContainer">
+                <h2>Select Your Challenge Days</h2>
+                <form id="daysForm">
+                    <label id="abab" for="daysInput">Enter number of days:</label>
+                    <input type="number" id="daysInput" min="1" placeholder="e.g., 30" required>
+                    <button type="submit">Set Challenge</button>
+                </form>
+            </div>
+            <div class="challenge-grid" id="challengeGrid">
+                <!-- Days will be dynamically generated -->
+            </div>
+            <button id="resetButton" style="display: none;">Reset Challenge</button>
+        </div>
+        
+        
+        <div class="challenge-grid" id="challengeGrid">
+            <!-- Dynamically generated buttons -->
+        </div>
+
+        <p id="task">Click on a day to mark it as complete.</p>
+    </main>
+
+    <footer class="container">
+        <small>
+            Created For You • <a href="#">Privacy Policy</a> • <a href="#">Terms of Use</a>
+        </small>
+    </footer>
+
+ 
+</body>
+</html>
